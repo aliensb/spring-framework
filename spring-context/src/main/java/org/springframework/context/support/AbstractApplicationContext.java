@@ -517,37 +517,42 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
 			// Prepare this context for refreshing.
+			//准备工作，包括设置启动时间，是否激活标识位，初始化属性源（property-source）的配置
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			//设置表达式解析器，属性编辑器，条件ApplicationContextAwareProcessor处理器，注册一些非正常
+			//自动注入的bean(主要是针对factory或者context的原文解释为This is intended for factory/context references that are supposed
+			//to be autowirable but are not defined as beans in the factory)
+			//添加ApplicationListenerDetector处理器
 			prepareBeanFactory(beanFactory);
 
 			try {
-				// Allows post-processing of the bean factory in context subclasses.
+				// Allows post-processing of the bean factory in context subclasses.空方法暂未实现，spring可能后续会在这里做一些扩展，所有的bean信息已经加载完毕，但是还没有创建bean,在这里可以注册特殊的beanPostProcessor
 				postProcessBeanFactory(beanFactory);
 
-				// Invoke factory processors registered as beans in the context.
+				// Invoke factory processors registered as beans in the context.创建和调用BeanFactoryPostProcessor，如果BeanFactoryPostProcessor是有序的（实现了PriorityOrdered这个接口），则会遵守顺序
 				invokeBeanFactoryPostProcessors(beanFactory);
 
-				// Register bean processors that intercept bean creation.
+				// Register bean processors that intercept bean creation.创建和调用BeanyPostProcessor，如果BeanPostProcessor是有序的（实现了PriorityOrdered这个接口），则会遵守顺序，在实际创建bean之前一定会调用
 				registerBeanPostProcessors(beanFactory);
 
-				// Initialize message source for this context.
+				// Initialize message source for this context.国际化相关
 				initMessageSource();
 
-				// Initialize event multicaster for this context.
+				// Initialize event multicaster for this context.初始化事件广播器
 				initApplicationEventMulticaster();
 
-				// Initialize other special beans in specific context subclasses.
+				// Initialize other special beans in specific context subclasses.//web相关
 				onRefresh();
 
-				// Check for listener beans and register them.
+				// Check for listener beans and register them.//向事件广播器中注册具体时间，会从一下几个方面去找事件1.this.applicationListeners;2.getBeanNamesForType(ApplicationListener.class, true, false);3.this.earlyApplicationEvents;
 				registerListeners();
 
-				// Instantiate all remaining (non-lazy-init) singletons.
+				// Instantiate all remaining (non-lazy-init) singletons.//实例化bean
 				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
@@ -640,6 +645,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	}
 
 	/**
+	 *配置BeanFactory的特性。如果配置classLoader,PostProcessor
 	 * Configure the factory's standard context characteristics,
 	 * such as the context's ClassLoader and post-processors.
 	 * @param beanFactory the BeanFactory to configure
@@ -647,10 +653,12 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
 		// Tell the internal bean factory to use the context's class loader etc.
 		beanFactory.setBeanClassLoader(getClassLoader());
+		//设置表达式解析器
 		beanFactory.setBeanExpressionResolver(new StandardBeanExpressionResolver(beanFactory.getBeanClassLoader()));
 		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this, getEnvironment()));
 
 		// Configure the bean factory with context callbacks.
+		//配置ApplicationContextAware的处理器，用于回调用户实现了ApplicationContextAware中的setApplicationContext(ApplicationContext context)的方法
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 		beanFactory.ignoreDependencyInterface(EnvironmentAware.class);
 		beanFactory.ignoreDependencyInterface(EmbeddedValueResolverAware.class);

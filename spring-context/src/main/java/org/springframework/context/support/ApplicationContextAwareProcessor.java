@@ -34,6 +34,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.StringValueResolver;
 
 /**
+ * 用于给实现了aware等接口的类的bean来做回调（如一个Bean是实现了EnvironmentAware这个接口，则会在这里调用void setEnvironment(Environment environment);）
+ * 相当于给实现了的aware接口的bean来填充相关数据
  * {@link BeanPostProcessor} implementation that supplies the {@code ApplicationContext},
  * {@link org.springframework.core.env.Environment Environment}, or
  * {@link StringValueResolver} for the {@code ApplicationContext} to beans that
