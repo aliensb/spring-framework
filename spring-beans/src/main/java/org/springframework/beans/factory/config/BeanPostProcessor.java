@@ -19,22 +19,29 @@ package org.springframework.beans.factory.config;
 import org.springframework.beans.BeansException;
 import org.springframework.lang.Nullable;
 
-/**
+/** 工程的钩子，用于自定义对新创建的bean进行修改
  * Factory hook that allows for custom modification of new bean instances &mdash;
  * for example, checking for marker interfaces or wrapping beans with proxies.
- *
+ *通常来说，通过marker interface向bean中注入熟悉会实现postProcessBeforeInitialization这个接口
+ * 而给Bean添加代理则会实现postProcessAfterInitialization这个接口
  * <p>Typically, post-processors that populate beans via marker interfaces
  * or the like will implement {@link #postProcessBeforeInitialization},
  * while post-processors that wrap beans with proxies will normally
  * implement {@link #postProcessAfterInitialization}.
  *
+ *
+ *
+ *
+ * ApplicationContext会自动的检测到在bean definitions中的BeanPostProcessor，然后将他们运用到
+ * 后续创建的每个bean上
+ * BeanFactory同样允许通过编程的方式注册BeanPostProcessor,然后应用到通过bean factory创建的每个bean上
  * <h3>Registration</h3>
  * <p>An {@code ApplicationContext} can autodetect {@code BeanPostProcessor} beans
  * in its bean definitions and apply those post-processors to any beans subsequently
  * created. A plain {@code BeanFactory} allows for programmatic registration of
  * post-processors, applying them to all beans created through the bean factory.
  *
- * <h3>Ordering</h3>
+ * <h3>Ordering</h3>通过实现PriorityOrdered，Ordered这个接口，或者加@Order注解来实现BeanPostProcessor的排序
  * <p>{@code BeanPostProcessor} beans that are autodetected in an
  * {@code ApplicationContext} will be ordered according to
  * {@link org.springframework.core.PriorityOrdered} and
@@ -58,6 +65,7 @@ import org.springframework.lang.Nullable;
 public interface BeanPostProcessor {
 
 	/**
+	 * 在bean创建后，属性已经注入了，但是还没有InitializingBean#afterPropertiesSet或者是init-method方法前调用，返回修改后的bean，可以使一个包装后的，也可以使原有的
 	 * Apply this {@code BeanPostProcessor} to the given new bean instance <i>before</i> any bean
 	 * initialization callbacks (like InitializingBean's {@code afterPropertiesSet}
 	 * or a custom init-method). The bean will already be populated with property values.
@@ -66,7 +74,7 @@ public interface BeanPostProcessor {
 	 * @param bean the new bean instance
 	 * @param beanName the name of the bean
 	 * @return the bean instance to use, either the original or a wrapped one;
-	 * if {@code null}, no subsequent BeanPostProcessors will be invoked
+	 * if {@code null}, no subsequent BeanPostProcessors will be invoked 如果返回空，后续的BeanPostProcessor则不会被调用了
 	 * @throws org.springframework.beans.BeansException in case of errors
 	 * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet
 	 */
@@ -76,6 +84,9 @@ public interface BeanPostProcessor {
 	}
 
 	/**
+	 * 在回调了InitializingBean#afterPropertiesSet或init-method后调用
+	 * 注意的是正对FactoryBean的情况，容器会对FactoryBean的实例和FactoryBean创建出来的实例都进行一次调用，
+	 * 这个就可以通过自己来判断，
 	 * Apply this {@code BeanPostProcessor} to the given new bean instance <i>after</i> any bean
 	 * initialization callbacks (like InitializingBean's {@code afterPropertiesSet}
 	 * or a custom init-method). The bean will already be populated with property values.

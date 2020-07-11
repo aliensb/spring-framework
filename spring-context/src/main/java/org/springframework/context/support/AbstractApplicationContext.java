@@ -84,11 +84,15 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.util.ReflectionUtils;
 
 /**
+ * ApplicationContext的抽象实现，不强制要求配置文件的存储形式，实现了公用的context的功能，通过模板设计方式进行设计
+ * 具体的子类只需要实现抽象的方法即可
  * Abstract implementation of the {@link org.springframework.context.ApplicationContext}
  * interface. Doesn't mandate the type of storage used for configuration; simply
  * implements common context functionality. Uses the Template Method design pattern,
  * requiring concrete subclasses to implement abstract methods.
  *
+ * 和BeanFactory不同的是ApplicationContext可以去检查在内部Bean factory中定义的特殊bean,
+ * 因此这个类中会自动的注册在context中定义了的BeanFactoryPostProcessor，BeanPostProcessor，ApplicationListener
  * <p>In contrast to a plain BeanFactory, an ApplicationContext is supposed
  * to detect special beans defined in its internal bean factory:
  * Therefore, this class automatically registers
@@ -543,7 +547,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				// Initialize message source for this context.国际化相关
 				initMessageSource();
 
-				// Initialize event multicaster for this context.初始化事件广播器
+				// Initialize event multicaster for this context.初始化事件广播器,默认使用SimpleApplicationEventMulticaster
 				initApplicationEventMulticaster();
 
 				// Initialize other special beans in specific context subclasses.//web相关
@@ -856,9 +860,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * Finish the initialization of this context's bean factory,
 	 * initializing all remaining singleton beans.
 	 */
-	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
+	 protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
 		// Initialize conversion service for this context.
-		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
+ 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(
 					beanFactory.getBean(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class));

@@ -1,6 +1,12 @@
 package skr.wtf.learn.springlifecycle.service;
 
-public class Car {
+import org.springframework.beans.factory.InitializingBean;
+
+public class Car implements InitializingBean {
+
+	public void initMethod(){
+		System.out.println("Car#initMethod");
+	}
 	private String brand;
 
 	public String getBrand() {
@@ -19,5 +25,10 @@ public class Car {
 	}
 	public void tell(){
 		System.out.println("my brand is "+brand);
+	}
+
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		System.out.println("Car#afterPropertiesSet");
 	}
 }

@@ -19,6 +19,7 @@ package org.springframework.beans.factory.config;
 import org.springframework.beans.BeansException;
 
 /**
+ * 用于自定义修改application context中的bean定义信息的工厂钩子
  * Factory hook that allows for custom modification of an application context's
  * bean definitions, adapting the bean property values of the context's underlying
  * bean factory.
@@ -28,6 +29,9 @@ import org.springframework.beans.BeansException;
  * {@link PropertyResourceConfigurer} and its concrete implementations for
  * out-of-the-box solutions that address such configuration needs.
  *
+ * 可以用来修改bean的定义信息，但是不能用来修改bean的实例，如果修改了bean的实例，可能会导致
+ * 过早的初始化bean，违背了容器的规则，带来意外的副作用如，如果需要修改bean的实例，还是推荐使用
+ * BeanPostProcessor
  * <p>A {@code BeanFactoryPostProcessor} may interact with and modify bean
  * definitions, but never bean instances. Doing so may cause premature bean
  * instantiation, violating the container and causing unintended side-effects.
@@ -35,12 +39,14 @@ import org.springframework.beans.BeansException;
  * {@link BeanPostProcessor} instead.
  *
  * <h3>Registration</h3>
+ * ApplicationContext会自动发现放在自己bean definitions中的BeanFactoryPostProcessor，并且在创建其他bean之前调用
+ * BeanFactoryPostProcessor也可以通过调用ConfigurableApplicationContext#addBeanFactoryPostProcessor方法来调节
  * <p>An {@code ApplicationContext} auto-detects {@code BeanFactoryPostProcessor}
  * beans in its bean definitions and applies them before any other beans get created.
  * A {@code BeanFactoryPostProcessor} may also be registered programmatically
  * with a {@code ConfigurableApplicationContext}.
  *
- * <h3>Ordering</h3>
+ * <h3>Ordering</h3> 排序，和BeanPostProcessor一样
  * <p>{@code BeanFactoryPostProcessor} beans that are autodetected in an
  * {@code ApplicationContext} will be ordered according to
  * {@link org.springframework.core.PriorityOrdered} and
@@ -63,6 +69,9 @@ import org.springframework.beans.BeansException;
 public interface BeanFactoryPostProcessor {
 
 	/**
+	 * 用于在Bean Factory创建好后，所有的bean definitions已经加载后对bean definitions进行修改
+	 * 甚至可以eager-initializing beans.
+	 *
 	 * Modify the application context's internal bean factory after its standard
 	 * initialization. All bean definitions will have been loaded, but no beans
 	 * will have been instantiated yet. This allows for overriding or adding

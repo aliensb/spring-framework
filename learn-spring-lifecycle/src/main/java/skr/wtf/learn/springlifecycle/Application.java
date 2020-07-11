@@ -17,6 +17,8 @@ public class Application {
 //		AnnotationConfigApplicationContext context=new AnnotationConfigApplicationContext();
 //		context.register(Car.class);
 //		context.refresh();
-		context.getBean(Car.class).tell();
+		Car bean = context.getBean(Car.class);
+		Car bean1 = context.getBean(Car.class);
+		System.out.println(bean==bean1);
 	}
 }
